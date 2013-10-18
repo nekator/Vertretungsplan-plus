@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.jsoup.Jsoup;
@@ -126,13 +127,8 @@ public void ParseHTML (String htmlcode){
             	 System.out.println("schreiben nicht möglich");
              }
      }
-     int trcounter=0;
-     int tdcounter=0;
-     List<List<String>> stundenplan = new ArrayList<List<String>>();
-     String faecherstring = "";
-     List<String> faecher= new ArrayList<String>();
-     List<String> faechercopy= new ArrayList<String>();
-     int rowspanindex=0;
+     List<List<Element>> stundenplan = new ArrayList<List<Element>>();
+     
      trs=doc.select("table tbody tr");
      trs.remove(0);
      for(i=0; i<trs.size()-1;i++){
@@ -141,35 +137,34 @@ public void ParseHTML (String htmlcode){
          if(tds.size()>0){
          	tds.remove(0);
           }
-    	 for (int j=0;j<tds.size()-1;j++){
+         List<Element> faecher= returnNewList();
+    	 for (int j=1;j<tds.size();j++){
+    		 System.out.println(i+"   "+(j-1));
     		 Element td= tds.get(j);
-    		 if(stundenplan.get(i).get(j).isEmpty()){
-    		 faecherstring=td.text();
-    		 faecher.add(j, faecherstring);
-    		 }
-    		 else{
-    			 faecherstring= stundenplan.get(i).get(j);
-    			 faecher.add(j, faecherstring);
-    		 }
-    		 if(tds.get(j).hasAttr("rowspan")){
-    			 faechercopy.add(j,faecherstring);
-    			 stundenplan.add(i, faechercopy);
-    			
-    		 }
-    		 else{
-    			 
-    		 }
-    	
-    		 
+    		 faecher.add(td);	
     	 }
     	 
-    	 System.out.println(faecher);
-    	 faecher.clear();
+    	 stundenplan.add(i, faecher);
      }
-    
 
-		
-	
-	System.out.println(doc.toString());
+     for(i=0;i<stundenplan.size();i++){
+    	 List<Element> faecher=stundenplan.get(i);
+    	 for(int j=0;j<faecher.size();j++){
+    		 if(faecher.get(j).hasAttr("rowspan")){
+    			 faecher.get(j).removeAttr("rowspan");
+    			 if(i!=stundenplan.size()-1){
+    			 List<Element> helperlist = stundenplan.get(i+1);
+    			 helperlist.add(j,faecher.get(j));
+    			 stundenplan.set(i+1, helperlist);
+    			 }
+    		 }
+    	 }
+     }
+     System.out.println(stundenplan);
 }
+public List<Element> returnNewList() {
+	   List<Element> suggestedPhrases = new ArrayList<Element>();
+	   
+	   return suggestedPhrases;
+	}
 }
